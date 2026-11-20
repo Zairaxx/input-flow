@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Facit-pussel: Biobokningen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #F6F5F0; --ink: #16202E; --muted: #4A5363; --line: #E3DFD3; --card: #FCFBF7;
+  --code: #1B2433; --code-ink: #E6E9EF; --code-dim: #8E9AAD; --accent: #F2C94C; --accent-ink: #7A5400;
+  --kw: #8CB8FF; --str: #F2C94C; --num: #F2A58C;
+  --ok: #1A5C33; --ok-bg: #D6EBDC; --bad: #8E1F16; --bad-bg: #F6D9D5;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Inter', Arial, sans-serif; font-size: 17px; line-height: 1.5; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; }
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 2px; color: var(--accent-ink); text-transform: uppercase; margin: 0 0 8px; }
+h1, h2 { font-family: 'Space Grotesk', Arial, sans-serif; letter-spacing: -0.5px; margin: 0; }
+h1 { font-size: 44px; line-height: 1.05; }
+h2 { font-size: 28px; line-height: 1.15; }
+.lead { color: var(--muted); max-width: 680px; margin: 14px 0 0; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 28px 0 8px; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1.5px solid var(--line); font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; }
+
+details.given { margin-top: 24px; background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+details.given summary { cursor: pointer; font-weight: 600; }
+details.given p { color: var(--muted); margin: 10px 0; font-size: 15px; }
+
+pre.code { margin: 0; background: var(--code); color: var(--code-ink); font-family: 'JetBrains Mono', monospace; font-size: 14.5px; line-height: 1.55; padding: 14px 18px; border-radius: 12px; overflow-x: auto; }
+.tk-kw { color: var(--kw); } .tk-str { color: var(--str); } .tk-num { color: var(--num); } .tk-cm { color: var(--code-dim); } .tk-tpl { color: #F5B8E0; }
+
+section.puzzle { margin-top: 44px; scroll-margin-top: 16px; }
+.task { color: var(--muted); margin: 8px 0 16px; max-width: 720px; }
+ol.blocks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.blk { display: flex; align-items: stretch; background: var(--code); border-radius: 12px; border: 2px solid transparent; user-select: none; -webkit-user-select: none; transition: border-color .15s, box-shadow .15s; }
+.blk.dragging { box-shadow: 0 10px 24px rgba(22, 32, 46, .28); border-color: var(--accent); position: relative; z-index: 2; }
+.handle { flex: 0 0 34px; display: flex; align-items: center; justify-content: center; color: var(--code-dim); cursor: grab; touch-action: none; font-size: 18px; letter-spacing: -3px; border-right: 1px solid #2A3547; }
+.blk pre { flex: 1; margin: 0; padding: 10px 14px; color: var(--code-ink); font-family: 'JetBrains Mono', monospace; font-size: 14.5px; line-height: 1.55; overflow-x: auto; cursor: grab; }
+.moves { display: flex; flex-direction: column; border-left: 1px solid #2A3547; }
+.moves button { flex: 1; width: 38px; border: 0; background: transparent; color: var(--code-dim); cursor: pointer; font-size: 14px; }
+.moves button:hover, .moves button:focus-visible { color: var(--accent); background: #232E40; outline: none; }
+.moves button:first-child { border-radius: 0 10px 0 0; } .moves button:last-child { border-radius: 0 0 10px 0; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; align-items: center; }
+.btn { font: 600 15px 'Inter', Arial, sans-serif; padding: 10px 16px; border-radius: 10px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--ink); color: #F6F5F0; }
+.btn.primary:hover { background: #24324A; }
+.btn:hover { background: #ECE8DC; }
+
+.small { font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">JavaScript 1 · Övningsuppgift</p>
+  <h1>Facit-pussel: Biobokningen</h1>
+  <p class="lead">Här är lösningen på uppgift 1–8 – men i fel ordning. Dra kodbitarna (eller använd pilarna) så att de står i den ordning du tror är rätt.</p>
+
+  <div class="bar" id="nav"></div>
+
+  <details class="given">
+    <summary>Kod som redan finns (HTML, data och element)</summary>
+    <p>Pusslen förutsätter att HTML:en har en checkbox med id <code>student</code> för uppgift 8, och att arrayerna <code>movies</code> och <code>snacks</code> ligger högst upp i script.js.</p>
+    <pre class="code" data-hl id="given-html"></pre>
+    <p>Överst i script.js, under arrayerna:</p>
+    <pre class="code" data-hl id="given-js"></pre>
+  </details>
+
+  <div id="puzzles"></div>
+
+</div>
+
+<script>
+const GIVEN_HTML = `<label><input type="checkbox" id="student"> Jag är student (-20 % på biljetterna)</label>`;
+
+const GIVEN_JS = `const form = document.querySelector("#booking-form");
+const movieSelect = document.querySelector("#movie");
+const movieInfo = document.querySelector("#movie-info");
+const ticketSelect = document.querySelector("#tickets");
+const snackBox = document.querySelector("#snacks");
+const studentBox = document.querySelector("#student");
+const error = document.querySelector("#error");
+const summary = document.querySelector("#summary");`;
+
+const PUZZLES = [
+  {
+    id: "uppgift-1",
+    title: "Uppgift 1 – Fyll film-dropdownen",
+    task: "Först ett ”Välj film”-alternativ med tomt value, sedan en <option> per film med id som value och titel som text.",
+    blocks: [
+      { id: "a", code: `const placeholder = document.createElement("option");` },
+      { id: "b", code: `placeholder.value = "";\nplaceholder.textContent = "Välj film";`, after: ["a"] },
+      { id: "c", code: `movieSelect.append(placeholder);`, after: ["b"] },
+      { id: "d", code: `movies.forEach((movie) => {`, after: ["c"] },
+      { id: "e", code: `  const option = document.createElement("option");`, after: ["d"] },
+      { id: "f", code: `  option.value = movie.id;\n  option.textContent = movie.title;`, after: ["e"] },
+      { id: "g", code: `  movieSelect.append(option);`, after: ["f"] },
+      { id: "h", code: `});`, after: ["g"] }
+    ]
+  },
+  {
+    id: "uppgift-2",
+    title: "Uppgift 2 – Visa info om vald film",
+    task: "Hitta filmobjektet som matchar dropdownens value. Väljer man ”Välj film” ska rutan tömmas.",
+    blocks: [
+      { id: "a", code: `movieSelect.addEventListener("change", () => {` },
+      { id: "b", code: `  const movie = movies.find((m) => m.id === movieSelect.value);`, after: ["a"] },
+      { id: "c", code: `  if (!movie) {\n    movieInfo.textContent = "";\n    return;\n  }`, after: ["b"] },
+      { id: "d", code: "  movieInfo.textContent = `${movie.title} · ${movie.genre} · ${movie.price} kr`;", after: ["c"] },
+      { id: "e", code: `});`, after: ["d"] }
+    ]
+  },
+  {
+    id: "uppgift-3",
+    title: "Uppgift 3 – Antal biljetter med en for-loop",
+    task: "Skapa alternativen 1–6 i #tickets.",
+    blocks: [
+      { id: "a", code: `for (let i = 1; i <= 6; i++) {` },
+      { id: "b", code: `  const option = document.createElement("option");`, after: ["a"] },
+      { id: "c", code: `  option.value = i;\n  option.textContent = i;`, after: ["b"] },
+      { id: "d", code: `  ticketSelect.append(option);`, after: ["c"] },
+      { id: "e", code: `}`, after: ["d"] }
+    ]
+  },
+  {
+    id: "uppgift-4",
+    title: "Uppgift 4 – En checkbox per snack",
+    task: "Varje checkbox får snackets id som value och ligger i en label med namn och pris. Skapa först, placera sedan.",
+    blocks: [
+      { id: "a", code: `snacks.forEach((snack) => {` },
+      { id: "b", code: `  const label = document.createElement("label");`, after: ["a"] },
+      { id: "c", code: `  const checkbox = document.createElement("input");`, after: ["a"] },
+      { id: "d", code: `  checkbox.type = "checkbox";\n  checkbox.name = "snack";\n  checkbox.value = snack.id;`, after: ["c"] },
+      { id: "e", code: "  label.append(checkbox, ` ${snack.name} (${snack.price} kr)`);", after: ["b", "d"] },
+      { id: "f", code: `  snackBox.append(label);`, after: ["e"] },
+      { id: "g", code: `});`, after: ["f"] }
+    ]
+  },
+  {
+    id: "uppgift-5-8",
+    title: "Uppgift 5–8 – Boka",
+    task: "Stoppa omladdningen, validera filmen, räkna ut totalpriset (med studentrabatt) och skriv ut sammanfattningen. Här kan flera ordningar vara rätt – det viktiga är att allt en rad använder redan finns ovanför.",
+    blocks: [
+      { id: "a", code: `form.addEventListener("submit", (e) => {\n  e.preventDefault();` },
+      { id: "b", code: `  const movie = movies.find((m) => m.id === movieSelect.value);`, after: ["a"] },
+      { id: "c", code: `  if (!movie) {\n    error.textContent = "Välj en film först!";\n    return;\n  }\n  error.textContent = "";`, after: ["b"] },
+      { id: "d", code: `  const tickets = Number(ticketSelect.value);`, after: ["a"] },
+      { id: "e", code: `  const checkedIds = Array.from(\n    document.querySelectorAll('input[name="snack"]:checked')\n  ).map((box) => box.value);`, after: ["a"] },
+      { id: "f", code: `  const chosenSnacks = snacks.filter((snack) => checkedIds.includes(snack.id));`, after: ["e"] },
+      { id: "g", code: `  let ticketPrice = movie.price * tickets;`, after: ["c", "d"] },
+      { id: "h", code: `  if (studentBox.checked) {\n    ticketPrice = ticketPrice * 0.8;\n  }`, after: ["g"] },
+      { id: "i", code: `  let snackPrice = 0;\n  chosenSnacks.forEach((snack) => {\n    snackPrice += snack.price;\n  });`, after: ["f"] },
+      { id: "j", code: `  const total = ticketPrice + snackPrice;`, after: ["h", "i"] },
+      { id: "k", code: `  let snackText = "inga";\n  if (chosenSnacks.length > 0) {\n    snackText = chosenSnacks.map((snack) => snack.name).join(", ");\n  }`, after: ["f"] },
+      { id: "l", code: "  summary.textContent =\n    `Du har bokat ${tickets} biljetter till ${movie.title}. ` +\n    `Snacks: ${snackText}. Totalt: ${total} kr`;", after: ["c", "j", "k"] },
+      { id: "m", code: `});`, after: ["l"] }
+    ]
+  }
+];
+
+/* ---------- Syntaxfärgning ---------- */
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function highlight(src) {
+  const re = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(`(?:[^`\\]|\\.)*`)|\b(const|let|if|for|return|function)\b|\b(\d+(?:\.\d+)?)\b/gm;
+  let out = "", last = 0, m;
+  while ((m = re.exec(src))) {
+    out += esc(src.slice(last, m.index));
+    if (m[3]) {
+      // Template literal: texten gul, ${...} i vanlig kodfärg
+      out += m[0].split(/(\$\{[^}]*\})/).map((part) =>
+        part.startsWith("${") ? `<span class="tk-tpl">${esc(part)}</span>` : `<span class="tk-str">${esc(part)}</span>`
+      ).join("");
+    } else {
+      const cls = m[1] ? "tk-cm" : m[2] ? "tk-str" : m[4] ? "tk-kw" : "tk-num";
+      out += `<span class="${cls}">${esc(m[0])}</span>`;
+    }
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+
+/* ---------- Tillstånd ---------- */
+
+function shuffled(blocks) {
+  const ref = blocks.map((b) => b.id).join();
+  let arr;
+  do {
+    arr = blocks.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  } while (arr.length > 1 && isCorrect(blocks, arr.map((b) => b.id)));
+  return arr;
+}
+
+// Byter plats på bitar med exakt samma kod så att de räknas i sin naturliga ordning
+function canonical(puzzle, order) {
+  const byCode = {};
+  puzzle.blocks.forEach((b) => { (byCode[b.code] = byCode[b.code] || []).push(b.id); });
+  const seen = {};
+  return order.map((id) => {
+    const code = puzzle.blocks.find((b) => b.id === id).code;
+    const n = seen[code] = (seen[code] || 0) + 1;
+    return byCode[code][n - 1];
+  });
+}
+function wrongIds(puzzle, order) {
+  const ids = canonical(puzzle, order);
+  const pos = {}; ids.forEach((id, i) => { pos[id] = i; });
+  return ids.filter((id) => {
+    const b = puzzle.blocks.find((x) => x.id === id);
+    return (b.after || []).some((dep) => pos[dep] > pos[id]);
+  });
+}
+function isCorrect(blocks, order) {
+  const p = { blocks };
+  return wrongIds(p, order).length === 0;
+}
+
+/* ---------- Rendering ---------- */
+const host = document.getElementById("puzzles");
+const nav = document.getElementById("nav");
+
+function renderNav() {
+  nav.innerHTML = "";
+  PUZZLES.forEach((p, i) => {
+    const a = document.createElement("a");
+    a.href = "#" + p.id;
+    a.className = "pill";
+    a.textContent = i === 4 ? "Uppgift 5–8" : "Uppgift " + (i + 1);
+    a.title = p.title;
+    nav.append(a);
+  });
+}
+
+function blockEl(b) {
+  const li = document.createElement("li");
+  li.className = "blk";
+  li.dataset.id = b.id;
+  li.innerHTML = `<div class="handle" aria-hidden="true">⋮⋮</div><pre></pre>
+    <div class="moves"><button type="button" class="up" aria-label="Flytta upp">▲</button><button type="button" class="down" aria-label="Flytta ner">▼</button></div>`;
+  return li;
+}
+
+function paintCode(li, puzzle) {
+  const b = puzzle.blocks.find((x) => x.id === li.dataset.id);
+  li.querySelector("pre").innerHTML = highlight(b.code);
+}
+
+function renderPuzzle(p) {
+  const sec = document.createElement("section");
+  sec.className = "puzzle";
+  sec.id = p.id;
+  sec.innerHTML = `<h2></h2><p class="task"></p><ol class="blocks"></ol>`;
+  sec.querySelector("h2").textContent = p.title;
+  sec.querySelector(".task").textContent = p.task;
+  const list = sec.querySelector(".blocks");
+
+  function fill(order) {
+    list.innerHTML = "";
+    order.forEach((b) => { const li = blockEl(b); paintCode(li, p); list.append(li); });
+  }
+  fill(shuffled(p.blocks));
+
+  // Pilknappar
+  list.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    const li = btn.closest(".blk");
+    if (btn.classList.contains("up") && li.previousElementSibling) list.insertBefore(li, li.previousElementSibling);
+    if (btn.classList.contains("down") && li.nextElementSibling) list.insertBefore(li.nextElementSibling, li);
+    btn.focus();
+  });
+
+  // Dra och släpp (mus + touch via handtaget)
+  let drag = null;
+  list.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button")) return;
+    const li = e.target.closest(".blk");
+    if (!li) return;
+    const onHandle = !!e.target.closest(".handle");
+    if (e.pointerType !== "mouse" && !onHandle) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    e.preventDefault();
+    drag = li;
+    list.setPointerCapture(e.pointerId);
+    li.classList.add("dragging");
+  });
+  list.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const others = [...list.children].filter((c) => c !== drag);
+    let before = null;
+    for (const c of others) {
+      const r = c.getBoundingClientRect();
+      if (e.clientY < r.top + r.height / 2) { before = c; break; }
+    }
+    if (before) { if (drag.nextElementSibling !== before) list.insertBefore(drag, before); }
+    else if (list.lastElementChild !== drag) list.append(drag);
+  });
+  const end = () => { if (drag) { drag.classList.remove("dragging"); drag = null; } };
+  list.addEventListener("pointerup", end);
+  list.addEventListener("pointercancel", end);
+  list.addEventListener("lostpointercapture", end);
+
+  host.append(sec);
+}
+
+/* ---------- Start ---------- */
+document.getElementById("given-html").innerHTML = highlight(GIVEN_HTML);
+document.getElementById("given-js").innerHTML = highlight(GIVEN_JS);
+PUZZLES.forEach(renderPuzzle);
+renderNav();
+
+</script>
+</body>
+</html>
